@@ -1,0 +1,29 @@
+# Root ignore rules
+.DS_Store
+*.swp
+*~
+
+# Node
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Next.js
+frontend/.next/
+frontend/.vercel/
+frontend/.env*
+
+# Backend local database data
+backend/local-db-data/
+
+# Ignore nested frontend repository metadata
+frontend/.git/
+
+# build
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+
+# system
+*.log
