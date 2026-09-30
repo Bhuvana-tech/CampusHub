@@ -1,150 +1,162 @@
-const mongoose = require('mongoose');
-const User = require('./models/User');
-const Note = require('./models/Note');
-const Event = require('./models/Event');
-const CafeteriaItem = require('./models/CafeteriaItem');
-const CafeteriaStatus = require('./models/CafeteriaStatus');
-const LostAndFound = require('./models/LostAndFound');
+const Product = require('./models/Product');
 
-async function seedData() {
-  console.log('Seeding data...');
-  await Promise.all([
-    User.deleteMany({}),
-    Note.deleteMany({}),
-    Event.deleteMany({}),
-    CafeteriaItem.deleteMany({}),
-    CafeteriaStatus.deleteMany({}),
-    LostAndFound.deleteMany({})
-  ]);
+// Helper SVG generator function to produce attractive food card images
+const createSvg = (bgColor, emoji, text, circleColor) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+    <rect width="400" height="300" fill="${bgColor}" rx="16"/>
+    <circle cx="200" cy="130" r="85" fill="${circleColor}" opacity="0.4"/>
+    <circle cx="200" cy="130" r="70" fill="#ffffff" opacity="0.9"/>
+    <text x="200" y="150" font-size="72" text-anchor="middle" dominant-baseline="middle">${emoji}</text>
+    <text x="200" y="245" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700" fill="#1e293b" text-anchor="middle">${text}</text>
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
 
-  const bcrypt = require('bcryptjs');
-  const defaultPassword = await bcrypt.hash('password123', 10);
+const sampleProducts = [
+  // VEGETABLES
+  {
+    name: 'Tomato',
+    category: 'Vegetables',
+    price: 40,
+    unit: 'kg',
+    image: createSvg('#fef2f2', '🍅', 'Fresh Tomato', '#fca5a5')
+  },
+  {
+    name: 'Potato',
+    category: 'Vegetables',
+    price: 35,
+    unit: 'kg',
+    image: createSvg('#fefce8', '🥔', 'Organic Potato', '#fde047')
+  },
+  {
+    name: 'Onion',
+    category: 'Vegetables',
+    price: 30,
+    unit: 'kg',
+    image: createSvg('#fae8ff', '🧅', 'Red Onion', '#f0abfc')
+  },
+  {
+    name: 'Carrot',
+    category: 'Vegetables',
+    price: 50,
+    unit: 'kg',
+    image: createSvg('#fff7ed', '🥕', 'Fresh Carrot', '#fdba74')
+  },
+  {
+    name: 'Beans',
+    category: 'Vegetables',
+    price: 60,
+    unit: 'kg',
+    image: createSvg('#f0fdf4', '🫛', 'Green Beans', '#86efac')
+  },
+  {
+    name: 'Cabbage',
+    category: 'Vegetables',
+    price: 40,
+    unit: 'kg',
+    image: createSvg('#ecfdf5', '🥬', 'Green Cabbage', '#6ee7b7')
+  },
+  {
+    name: 'Cauliflower',
+    category: 'Vegetables',
+    price: 45,
+    unit: 'pc',
+    image: createSvg('#f8fafc', '🥦', 'Cauliflower', '#cbd5e1')
+  },
+  {
+    name: 'Spinach',
+    category: 'Vegetables',
+    price: 25,
+    unit: 'bunch',
+    image: createSvg('#f0fdf4', '🌿', 'Fresh Spinach', '#4ade80')
+  },
+  {
+    name: 'Brinjal',
+    category: 'Vegetables',
+    price: 35,
+    unit: 'kg',
+    image: createSvg('#faf5ff', '🍆', 'Fresh Brinjal', '#c084fc')
+  },
+  {
+    name: 'Capsicum',
+    category: 'Vegetables',
+    price: 70,
+    unit: 'kg',
+    image: createSvg('#f0fdf4', '🫑', 'Green Capsicum', '#4ade80')
+  },
 
-  const user1 = await User.create({
-    name: 'Alice Johnson',
-    email: 'alice@campus.edu',
-    password: defaultPassword,
-    branch: 'Computer Science',
-    semester: '6',
-    skills: ['React', 'Next.js', 'UI/UX'],
-    interests: ['Hackathons', 'Design'],
-    connections: [] // Will update after all created
-  });
+  // FRUITS
+  {
+    name: 'Apple',
+    category: 'Fruits',
+    price: 120,
+    unit: 'kg',
+    image: createSvg('#fef2f2', '🍎', 'Red Apple', '#f87171')
+  },
+  {
+    name: 'Banana',
+    category: 'Fruits',
+    price: 50,
+    unit: 'dozen',
+    image: createSvg('#fefce8', '🍌', 'Ripe Banana', '#facc15')
+  },
+  {
+    name: 'Orange',
+    category: 'Fruits',
+    price: 80,
+    unit: 'kg',
+    image: createSvg('#fff7ed', '🍊', 'Juicy Orange', '#fb923c')
+  },
+  {
+    name: 'Grapes',
+    category: 'Fruits',
+    price: 90,
+    unit: 'kg',
+    image: createSvg('#f5f3ff', '🍇', 'Sweet Grapes', '#c084fc')
+  },
+  {
+    name: 'Mango',
+    category: 'Fruits',
+    price: 150,
+    unit: 'kg',
+    image: createSvg('#fffbeb', '🥭', 'King Mango', '#fbbf24')
+  },
+  {
+    name: 'Papaya',
+    category: 'Fruits',
+    price: 60,
+    unit: 'pc',
+    image: createSvg('#fff7ed', '🥭', 'Fresh Papaya', '#f97316')
+  },
+  {
+    name: 'Watermelon',
+    category: 'Fruits',
+    price: 40,
+    unit: 'pc',
+    image: createSvg('#fef2f2', '🍉', 'Watermelon', '#f87171')
+  },
+  {
+    name: 'Pomegranate',
+    category: 'Fruits',
+    price: 140,
+    unit: 'kg',
+    image: createSvg('#fff1f2', '🍎', 'Pomegranate', '#fb7185')
+  }
+];
 
-  const user2 = await User.create({
-    name: 'Bob Smith',
-    email: 'bob@campus.edu',
-    password: defaultPassword,
-    branch: 'Electronics',
-    semester: '4',
-    skills: ['Python', 'IoT', 'C++'],
-    interests: ['Robotics', 'Gaming'],
-    connections: [user1._id]
-  });
-
-  const user3 = await User.create({
-    name: 'Charlie Davis',
-    email: 'charlie@campus.edu',
-    password: defaultPassword,
-    branch: 'Mechanical',
-    semester: '3',
-    skills: ['CAD', 'Design', 'Physics'],
-    interests: ['Automotive', 'Startups'],
-    connections: [user1._id, user2._id]
-  });
-
-  // Update Alice to have Bob and Charlie as connections
-  await User.findByIdAndUpdate(user1._id, { $set: { connections: [user2._id, user3._id] } });
-  // Update Bob to have Charlie as well
-  await User.findByIdAndUpdate(user2._id, { $addToSet: { connections: user3._id } });
-
-  await Note.create([
-    {
-      title: 'Advanced React Patterns',
-      subject: 'Web Development',
-      uploader: 'Alice Johnson',
-      rating: 4.8,
-      tags: ['Highly Trusted', 'Exam Focused'],
-      fileUrl: '/mock-url'
-    },
-    {
-      title: 'Thermodynamics Cheat Sheet',
-      subject: 'Physics',
-      uploader: 'Charlie Davis',
-      rating: 4.5,
-      tags: ['Most Viewed'],
-      fileUrl: '/mock-url'
+const seedProducts = async () => {
+  try {
+    const count = await Product.countDocuments();
+    if (count === 0) {
+      console.log('Seeding initial products into database...');
+      await Product.insertMany(sampleProducts);
+      console.log(`Successfully seeded ${sampleProducts.length} products!`);
+    } else {
+      console.log(`Database already has ${count} products. Skipping initial seed.`);
     }
-  ]);
+  } catch (err) {
+    console.error('Error seeding products:', err);
+  }
+};
 
-  await Event.create([
-    {
-      title: 'Spring Campus Hackathon',
-      date: new Date(Date.now() + 86400000),
-      description: 'Join us for a 24-hour coding marathon to build solutions for campus life.',
-      attendees: [user1._id, user2._id]
-    },
-    {
-      title: 'Tech Talk: AI in 2024',
-      date: new Date(Date.now() + 86400000 * 3),
-      description: 'A deep dive into generative AI and its future.',
-      attendees: [user1._id, user3._id]
-    }
-  ]);
-
-  await CafeteriaItem.create([
-    {
-      itemName: 'Grilled Chicken Salad',
-      price: 8.50,
-      protein: 35,
-      carbs: 15,
-      isSpecial: true
-    },
-    {
-      itemName: 'Vegan Buddha Bowl',
-      price: 9.00,
-      protein: 15,
-      carbs: 45,
-      isSpecial: false
-    },
-    {
-      itemName: 'Classic Cheeseburger',
-      price: 6.50,
-      protein: 25,
-      carbs: 40,
-      isSpecial: false
-    }
-  ]);
-
-  await CafeteriaStatus.create({
-    notCrowded: 15,
-    moderate: 24,
-    crowded: 8,
-    reactions: [
-      { type: 'fast', count: 12 },
-      { type: 'rush', count: 4 },
-      { type: 'queue', count: 6 }
-    ]
-  });
-
-  await LostAndFound.create([
-    {
-      type: 'lost',
-      itemName: 'AirPods Pro 2',
-      description: 'White case, no cover. Left it near the library entrance.',
-      location: 'Central Library',
-      contact: 'alice@campus.edu'
-    },
-    {
-      type: 'found',
-      itemName: 'Blue Hydro Flask',
-      description: 'Found a 32oz blue water bottle with a sticker of a dog on it.',
-      location: 'Main Auditorium, Row 4',
-      contact: 'bob@campus.edu'
-    }
-  ]);
-
-  console.log('Database seeded successfully');
-}
-
-module.exports = seedData;
+module.exports = { seedProducts, sampleProducts };
